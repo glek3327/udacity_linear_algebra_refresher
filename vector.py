@@ -1,8 +1,5 @@
 
 from math import sqrt, acos, pi, degrees
-from decimal import Decimal, getcontext
-
-getcontext().prec = 30
 
 class Vector(object):
     CANNOT_NORMALIZE_ZERO_VECTOR_MSG ='Cannot normalize the zero vector'
@@ -11,7 +8,7 @@ class Vector(object):
         try:
             if not coordinates:
                 raise ValueError
-            self.coordinates = tuple([Decimal(x) for x in coordinates])
+            self.coordinates = tuple([x for x in coordinates])
             self.dimension = len(coordinates)
 
         except ValueError:
@@ -50,13 +47,13 @@ class Vector(object):
         #     sum += pow(self.coordinates[i], 2)
         # return math.sqrt(sum)
         coordinates_squared = [x**2 for x in self.coordinates]
-        return Decimal(sqrt(sum(coordinates_squared)))
+        return sqrt(sum(coordinates_squared))
 
-    def nomalized(self):
+    def normalized(self):
         # return self.times_scalar(1 / self.magnitude())
         try:
             magnitude = self.magnitude()
-            return self.times_scalar(Decimal(1.0)/magnitude)
+            return self.times_scalar(1.0/magnitude)
         except ZeroDivisionError:
             raise Exception('Cannot normalize the zero vector')
 
@@ -67,8 +64,8 @@ class Vector(object):
         # normalized = self.nomalized()
         # return acos(normalized.dot(v.nomalized()))
         try:
-            u1 = self.nomalized()
-            u2 = v.nomalized()
+            u1 = self.normalized()
+            u2 = v.normalized()
             angle_in_radians = acos(u1.dot(u2))
 
             if in_degrees:
@@ -85,7 +82,7 @@ class Vector(object):
 
     def isParallel(self, v):
         # try:
-            return self.angle_with(v) == 0
+            return self.angle_with(v) == 0 or self.angle_with(v) == pi
         # except Exception as e:
         #     print("error")
         #     return False
@@ -93,6 +90,25 @@ class Vector(object):
     def isOrthogonal(self, v):
         return self.dot(v) == 0
 
+    def projection(self, v):
+        u = self.normalized()
+        return u.times_scalar(u.dot(v))
+
+    def perp(self, v):
+        return v.minus(self.projection(v))
+
+    def cross_product(self, v):
+        x1 = self.coordinates[0]
+        y1 = self.coordinates[1]
+        z1 = self.coordinates[2]
+
+        x2 = v.coordinates[0]
+        y2 = v.coordinates[1]
+        z2 = v.coordinates[2]
+
+        return Vector([y1 * z2 - y2 * z1,
+                       -(x1 * z2 - x2 * z1),
+                       x1 * y2 - x2 * y1])
 
 ##vector module
 # my_vector = Vector([1, 2, 3])
@@ -145,18 +161,45 @@ class Vector(object):
 # print(degrees(v.angle_with(w)))
 
 ## quiz 5 : Checking for Parallelism & Orthogonality
-v = Vector([-7.579, -7.88])
-w = Vector([22.737, 23.64])
-print(v.isParallel(w), v.isOrthogonal(w))
+# v = Vector([-7.579, -7.88])
+# w = Vector([22.737, 23.64])
+# print(v.isParallel(w), v.isOrthogonal(w))
+#
+# v = Vector([-2.029, 9.97, 4.172])
+# w = Vector([-9.231, -6.639, -7.245])
+# print(v.isParallel(w), v.isOrthogonal(w))
+#
+# v = Vector([-2.328, -7.284, -1.214])
+# w = Vector([-1.821, 1.072, -2.94])
+# print(v.isParallel(w), v.isOrthogonal(w))
+#
+# v = Vector([2.118, 4.827])
+# w = Vector([0, 0])
+# print(v.isParallel(w), v.isOrthogonal(w))
 
-v = Vector([-2.029, 9.97, 4.172])
-w = Vector([-9.231, -6.639, -7.245])
-print(v.isParallel(w), v.isOrthogonal(w))
+## quiz 6 : Coding Vector Projections
+# v = Vector([3.039, 1.879])
+# b = Vector([0.825, 2.036])
+# print(b.projection(v))
+#
+# v = Vector([-9.88, -3.264, -8.159])
+# b = Vector([-2.155, -9.353, -9.473])
+# print(b.perp(v))
+#
+# v = Vector([3.009, -6.172, 3.692, -2.51])
+# b = Vector([6.404, -9.144, 2.759, 8.718])
+# print(b.projection(v), ", ", b.perp(v))
 
-v = Vector([-2.328, -7.284, -1.214])
-w = Vector([-1.821, 1.072, -2.94])
-print(v.isParallel(w), v.isOrthogonal(w))
+## quiz 7 : Coding cross products
+# v = Vector([8.462, 7.893, -8.187])
+# w = Vector([6.984, -5.975, 4.778])
+# print(v.cross_product(w))
+#
+# v = Vector([-8.987, -9.838, 5.031])
+# w = Vector([-4.268, -1.861, -8.866])
+# print(v.cross_product(w).magnitude())
+#
+# v = Vector([1.5, 9.547, 3.691])
+# w = Vector([-6.007, 0.124, 5.772])
+# print(v.cross_product(w).magnitude() / 2)
 
-v = Vector([2.118, 4.827])
-w = Vector([0, 0])
-print(v.isParallel(w), v.isOrthogonal(w))
