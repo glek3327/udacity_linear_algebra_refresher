@@ -17,9 +17,13 @@ class Line(object):
             normal_vector = Vector(all_zeros)
         self.normal_vector = normal_vector
 
+        # if not constant_term:
+        #     constant_term = Decimal('0')
+        # self.constant_term = Decimal(constant_term)
+
         if not constant_term:
-            constant_term = Decimal('0')
-        self.constant_term = Decimal(constant_term)
+            constant_term = 0
+        self.constant_term = constant_term
 
         self.set_basepoint()
 
@@ -28,7 +32,7 @@ class Line(object):
         try:
             n = self.normal_vector
             c = self.constant_term
-            basepoint_coords = ['0']*self.dimension
+            basepoint_coords = [0]*self.dimension
 
             initial_index = Line.first_nonzero_index(n)
             initial_coefficient = n[initial_index]
@@ -98,13 +102,41 @@ class Line(object):
         raise Exception(Line.NO_NONZERO_ELTS_FOUND_MSG)
 
     def is_parallel(self, l):
-        return self.normal_vector.isParallel(l.normal_vector)
+        n1 = Vector(self.normal_vector)
+        n2 = Vector(l.normal_vector)
+        return n1.isParallel(n2)
 
-    def is_equal(self, l):
+    def __eq__(self, l):
+        if self.normal_vector.magnitude() == 0:
+            return l.normal_vector.magnitude() == 0
+
+        elif l.normal_vector.magnitude() == 0:
+            return False
+
         if not self.is_parallel(l):
             return False
-        connecting_vector = Vector([self.basepoint, l.basepoint])
-        return connecting_vector.isOrthogonal(self.normal_vector) and connecting_vector.isOrthogonal(l.normal_vector)
+
+        v1 = Vector(self.basepoint)
+        v2 = Vector(l.basepoint)
+
+        connecting_vector = v1.minus(v2)
+        n1 = Vector(self.normal_vector)
+        return connecting_vector.isOrthogonal(n1)
+
+    def get_intersection(self, l):
+        if self == l:
+            return self
+        elif self.is_parallel(l):
+            return None
+
+        a, b = self.normal_vector.coordinates
+        c, d = l.normal_vector.coordinates
+        k1 = self.constant_term
+        k2 = l.constant_term
+
+
+        return Vector([(d * k1 - b * k2) / (a * d - b * c), (a * k2 - c * k1) / (a * d - b * c)])
+
 
 
 
@@ -114,18 +146,24 @@ class MyDecimal(Decimal):
 
 
 ## quiz 1 : Coding Functions for Lines
-l1 = Line(normal_vector=Vector([4.046, 2.836]), constant_term=1.21)
-l2 = Line(normal_vector=Vector([10.115, 7.09]), constant_term=3.025)
+l1 = Line(Vector([4.046, 2.836]), 1.21)
+l2 = Line(Vector([10.115, 7.09]), 3.025)
 print("is parallel? (no intersection) ", l1.is_parallel(l2))
-print("is same? ", l1.is_equal(l2))
+print("is same? ", l1 == l2)
+print("intersection : ", l1.get_intersection(l2))
+print("=====")
 
 
-# l1 = Line(normal_vector=Vector([7.204, 3.182]), constant_term=8.68)
-# l2 = Line(normal_vector=Vector([8.172, 4.114]), constant_term=9.883)
-# print("is parallel? (no intersection) ", l1.is_parallel(l2))
-# print("is same? ", l1.is_equal(l2))
-# 
-# l1 = Line(normal_vector=Vector([1.182, 5.562]), constant_term=6.744)
-# l2 = Line(normal_vector=Vector([1.773, 8.343]), constant_term=9.525)
-# print("is parallel? (no intersection) ", l1.is_parallel(l2))
-# print("is same? ", l1.is_equal(l2))
+l1 = Line(Vector([7.204, 3.182]), constant_term=8.68)
+l2 = Line(Vector([8.172, 4.114]), constant_term=9.883)
+print("is parallel? (no intersection) ", l1.is_parallel(l2))
+print("is same? ", l1 == l2)
+print("intersection : ", l1.get_intersection(l2))
+print("=====")
+
+l1 = Line(normal_vector=Vector([1.182, 5.562]), constant_term=6.744)
+l2 = Line(normal_vector=Vector([1.773, 8.343]), constant_term=9.525)
+print("is parallel? (no intersection) ", l1.is_parallel(l2))
+print("is same? ", l1 == l2)
+print("intersection : ", l1.get_intersection(l2))
+print("=====")
