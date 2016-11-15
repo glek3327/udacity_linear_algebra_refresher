@@ -1,5 +1,6 @@
-
+from decimal import Decimal, getcontext
 from math import sqrt, acos, pi, degrees
+
 
 class Vector(object):
     CANNOT_NORMALIZE_ZERO_VECTOR_MSG ='Cannot normalize the zero vector'
@@ -21,6 +22,23 @@ class Vector(object):
     def __str__(self):
         return 'Vector: {}'.format(self.coordinates)
 
+    def __iter__(self):
+        self.current = 0
+        return self
+
+    def __next__(self):
+        if self.current >= len(self.coordinates):
+            raise StopIteration
+        else:
+            current_value = self.coordinates[self.current]
+            self.current += 1
+            return current_value
+
+    def __len__(self):
+        return len(self.coordinates)
+
+    def __getitem__(self, i):
+        return self.coordinates[i]
 
     def __eq__(self, v):
         return self.coordinates == v.coordinates
@@ -66,7 +84,8 @@ class Vector(object):
         try:
             u1 = self.normalized()
             u2 = v.normalized()
-            angle_in_radians = acos(u1.dot(u2))
+
+            angle_in_radians = acos(round(u1.dot(u2), 10))
 
             if in_degrees:
                 degrees_per_radian = 180./ pi
@@ -82,7 +101,7 @@ class Vector(object):
 
     def isParallel(self, v):
         # try:
-            return self.angle_with(v) == 0 or self.angle_with(v) == pi
+            return self.magnitude() == 0 or v.magnitude() == 0 or self.angle_with(v) == 0 or self.angle_with(v) == pi
         # except Exception as e:
         #     print("error")
         #     return False
@@ -98,13 +117,8 @@ class Vector(object):
         return v.minus(self.projection(v))
 
     def cross_product(self, v):
-        x1 = self.coordinates[0]
-        y1 = self.coordinates[1]
-        z1 = self.coordinates[2]
-
-        x2 = v.coordinates[0]
-        y2 = v.coordinates[1]
-        z2 = v.coordinates[2]
+        x1, y1, z1 = self.coordinates
+        x2, y2, z2 = v.coordinates
 
         return Vector([y1 * z2 - y2 * z1,
                        -(x1 * z2 - x2 * z1),
@@ -202,4 +216,3 @@ class Vector(object):
 # v = Vector([1.5, 9.547, 3.691])
 # w = Vector([-6.007, 0.124, 5.772])
 # print(v.cross_product(w).magnitude() / 2)
-
